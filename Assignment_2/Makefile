@@ -1,8 +1,7 @@
 CXX ?= g++
 CXXFLAGS ?= -std=c++20 -O3 -Wall
-LDFLAGS ?= -L/home/zenop/pacs-examples/Examples/src/Utilities -lpacs
-
-# Source files
+LDFLAGS ?= -L$(PACS_ROOT)/lib -lpacs
+CPPFLAGS=-I$(PACS_ROOT)/include
 SRCS = main.cpp
 
 # Header files
@@ -23,7 +22,7 @@ $(EXEC): $(OBJS)
 
 # Rule to compile each source file into an object file
 %.o: %.cpp $(HEADERS)
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c $< -o $@
 
 # Clean target
 clean:

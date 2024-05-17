@@ -1,6 +1,7 @@
 //
 // Created by zenop on 23/04/2024.
 //
+// clang-format off
 #ifndef MATRIX_H
 #define MATRIX_H
 
@@ -8,6 +9,7 @@
 #include <array>
 #include <vector>
 #include <string>
+#include <stdexcept> //@note you have forgotten this. How could it work?
 
 
 namespace algebra {
@@ -27,7 +29,7 @@ namespace algebra {
     template<typename T, StorageOrder Order>
     class Matrix {
     public:
-        // Constructor
+        // Constructor //@note why not use Doxygen style comments?
         Matrix(std::size_t rows, std::size_t cols);
 
         // Insert element into matrix
@@ -68,6 +70,10 @@ namespace algebra {
 
     private:
         // Internal storage for uncompressed matrix
+        //@note to make mthings more efficient the comparison operator should be different
+        // for rowmajor and columnmajor cases In column major you want to compare the second index first
+        // You instead have chosen to store with the inverted indexes in the case of compressed columns. It is working,
+        // but it is confusing and more prone to errors.
         std::map<std::array<std::size_t, 2>, T> matrixMap;
 
         // Internal storage for compressed matrix (if applicable)
@@ -76,6 +82,7 @@ namespace algebra {
         std::vector<T> values;
 
         // Matrix dimensions
+
         std::size_t numRows;
         std::size_t numCols;
 
@@ -86,6 +93,7 @@ namespace algebra {
     // Matrix-Matrix multiplication
     template<typename T, StorageOrder Order>
     Matrix<T, Order> Matrix<T, Order>::operator*(const Matrix<T, Order> &other) {
+        //@note nice use of concepts
             static_assert(std::is_arithmetic_v<T>, "Matrix multiplication requires arithmetic types");
 
             if (compressed && other.compressed) {
@@ -107,7 +115,7 @@ namespace algebra {
                     }
                     return result;
                 } else if constexpr (Order == StorageOrder::ColumnMajor) {
-                    if (numRows != other.numCols) {
+                    if (numRows != other.numCols) {//@note this test does not debend on the storage order!
                         throw std::invalid_argument("Matrix dimensions mismatch for multiplication");
                     }
 

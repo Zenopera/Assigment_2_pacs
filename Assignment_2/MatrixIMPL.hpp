@@ -5,11 +5,14 @@
 #define MATRIXIMPL_H
 
 #include "Matrix.hpp"
-#include <fstream>
-#include <sstream>
-#include <cmath>
 #include <algorithm>
+#include <cmath>
+#include <fstream>
+#include <iostream> //@note you have forgotten this. How dould it work?
+#include <sstream>
 
+
+// clang-format off
 
 namespace algebra {
 
@@ -27,6 +30,7 @@ namespace algebra {
             throw std::logic_error("Cannot insert elements into a compressed matrix");
         }
         if constexpr (Order == StorageOrder::RowMajor) {
+            //@note if the value exists already it will be overridden. Is this the expected behavior?
             matrixMap[{row, col}] = value;
         } else {
             matrixMap[{col, row}] = value;
@@ -39,6 +43,7 @@ namespace algebra {
     template<typename T, StorageOrder Order>
     void Matrix<T, Order>::compress() {
         if (compressed) {
+            //@note I think is not an error. It is just a no operation.
             std::cerr << "Already compressed" << std::endl;
             return;
         }
@@ -57,7 +62,8 @@ namespace algebra {
                 values[k] = it->second;
                 k++;
             }
-
+            //@note Since map is ordered this could have been made simpler and more efficient
+            // by iterating over the map and filling the vectors directly
             for (std::size_t i = 0; i < numRows + 1; i++) {
                 innerIndexes[i] = std::distance(matrixMap.begin(),
                                                 matrixMap.lower_bound(std::array<std::size_t, 2>{i, 0}));
@@ -120,6 +126,9 @@ namespace algebra {
 
 
     // Resize matrix
+    //@note is not just resizing, it is also clearing the matrix. 
+    // This may be confusing for the user since the meaning is different from that
+    // of resize for standard vectors.
     template<typename T, StorageOrder Order>
     void Matrix<T, Order>::resize(std::size_t rows, std::size_t cols) {
         numRows = rows;
@@ -159,6 +168,7 @@ namespace algebra {
                 }
             } else {
                 index = innerIndexes[col];
+             //@note if innerindexes are ordered you can use std::binary_rearch, it is more efficien
                 while (index < innerIndexes[col + 1] && outerIndexes[index] < row) {
                     ++index;
                 }
@@ -275,6 +285,11 @@ namespace algebra {
         if constexpr (Order == StorageOrder::RowMajor) {
             if constexpr (normType == NormType::One) {
                 // Compute L1 norm
+                // @note: In fact you can make it more efficient just by looping over the container
+                // if compressied just the container holding the values, if not compressed
+                // you traverse the map and extract the values. It is more efficient since you do not need
+                // repeated calls to operator()(int, int). And you may also exploit standard algorithms!
+                // this note applies also to the other norms.
                 for (std::size_t i = 0; i < numRows; ++i) {
                     double sum = 0.0;
                     for (std::size_t j = 0; j < numCols; ++j) {
